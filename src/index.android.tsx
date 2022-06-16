@@ -17,25 +17,25 @@ const Ed25519Rn = NativeModules.Ed25519Rn
       }
     );
 
-export async function generateKeypair(): Promise<string> {
+export async function androidGenerateKeypair(): Promise<string> {
   return Ed25519Rn.generateKeypair();
 }
 
-export async function getPublicKey(keyPair: string): Promise<string> {
+export async function androidGetPublicKey(keyPair: string): Promise<string> {
   return Ed25519Rn.getPublicKey(keyPair);
 }
 
-export async function getSharedKey(
+export async function androidGetSharedKey(
   keyPair: string,
   otherPublicKey: string
 ): Promise<string> {
   return Ed25519Rn.getSharedKey(keyPair, otherPublicKey);
 }
 
-export async function sign(keyPair: string, data: string): Promise<string> {
+export async function androidSign(keyPair: string, data: string): Promise<string> {
   return Ed25519Rn.sign(keyPair, data);
 }
 
-export async function verify(publicKey: string, data: string, signature: string): Promise<boolean> {
+export async function androidVerify(publicKey: string, data: string, signature: string): Promise<boolean> {
   return Ed25519Rn.verify(publicKey, data, signature);
 }

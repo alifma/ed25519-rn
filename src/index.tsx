@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import {generateKeypair as androidGenerateKeypair, getPublicKey as androidGetPublicKey, getSharedKey as androidGetSharedKey, sign as androidSign, verify as androidVerify} from './index.android'
+import {androidGenerateKeypair, androidGetPublicKey, androidGetSharedKey, androidSign, androidVerify} from './index.android'
 import { generateKeyPair as genKeyPair, sharedKey, sign as curveSign, verify as curveVerify} from 'curve25519-js'
 import arrayBufferToHex from 'array-buffer-to-hex';
 import { TextEncoder } from "web-encoding"
