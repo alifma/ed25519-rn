@@ -1,5 +1,4 @@
-import { Platform } from 'react-native';
-import {androidGenerateKeypair, androidGetPublicKey, androidGetSharedKey, androidSign, androidVerify} from './index.android'
+import { NativeModules, Platform } from 'react-native';
 import { generateKeyPair as genKeyPair, sharedKey, sign as curveSign, verify as curveVerify} from 'curve25519-js'
 import arrayBufferToHex from 'array-buffer-to-hex';
 import { TextEncoder } from "web-encoding"
@@ -14,6 +13,22 @@ const hexToArray = (input:string):Uint8Array => {
   return view;
 }
 
+const LINKING_ERROR =
+  `The package 'ed25519-rn' doesn't seem to be linked. Make sure: \n\n` +
+  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
+  '- You rebuilt the app after installing the package\n' +
+  '- You are not using Expo managed workflow\n';
+
+const Ed25519Rn = NativeModules.Ed25519Rn
+  ? NativeModules.Ed25519Rn
+  : new Proxy(
+      {},
+      {
+        get() {
+          throw new Error(LINKING_ERROR);
+        },
+      }
+    );
 
 const random = ():string => {
    
@@ -25,14 +40,14 @@ export const encode = (text:string):Uint8Array =>
   new TextEncoder().encode(text)
 
 export function generateKeypair(): Promise<string> {
-  if (Platform.OS === "android") return androidGenerateKeypair();
+  if (Platform.OS === "android") return Ed25519Rn.generateKeypair();
 
   const pair = genKeyPair(encode(random()));
   return Promise.resolve(arrayBufferToHex(pair.private.buffer) + arrayBufferToHex(pair.public.buffer));
 }
 
 export function getPublicKey(keyPair: string): Promise<string> {
-  if (Platform.OS === "android") return androidGetPublicKey(keyPair);
+  if (Platform.OS === "android") return Ed25519Rn.getPublicKey(keyPair);
 
   return Promise.resolve(keyPair.slice(64));
 }
@@ -42,7 +57,7 @@ export function getSharedKey(
   otherPublicKey: string
 ): Promise<string> {
 
-  if (Platform.OS === "android") return androidGetSharedKey(keyPair, otherPublicKey);
+  if (Platform.OS === "android") return Ed25519Rn.getSharedKey(keyPair, otherPublicKey);
 
   const mine =   hexToArray(keyPair.slice(0, 64));
   const theirs = hexToArray(otherPublicKey);
@@ -52,7 +67,7 @@ export function getSharedKey(
 }
 
 export function sign(keyPair: string, data: string): Promise<string> {
-  if (Platform.OS === "android") return androidSign(keyPair, data);
+  if (Platform.OS === "android") return Ed25519Rn.sign(keyPair, data);
 
   const mine = hexToArray(keyPair.slice(0, 64));
 
@@ -63,7 +78,7 @@ export function sign(keyPair: string, data: string): Promise<string> {
 }
 
 export function verify(publicKey: string, data: string, signature: string): Promise<boolean> {
-  if (Platform.OS === "android") return androidVerify(publicKey, data, signature);
+  if (Platform.OS === "android") return  Ed25519Rn.verify(publicKey, data, signature);
 
   return Promise.resolve(
       curveVerify(
